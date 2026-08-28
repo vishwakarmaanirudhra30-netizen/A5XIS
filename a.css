@@ -1,0 +1,446 @@
+/* ==========================================================================
+   A5 PLATFORM - TACTILE 3D GLASSMORPHIC DESIGN SYSTEM (OFF-WHITE ACCENTS)
+   ========================================================================== */
+
+:root {
+  --bg-base: #0f1219;
+  --bg-surface: #171b26;
+  --bg-surface-elevated: #1e2332;
+  --bg-input: #121520;
+  
+  /* Off-white & Warm Light Accents */
+  --text-main: #f4f3ef;
+  --text-muted: #9da5b4;
+  --text-dim: #636b7b;
+  
+  --accent-offwhite: #e6e4dc;
+  --accent-warm-gold: #d4af37;
+  --accent-soft-blue: #388bfd;
+  --accent-border: rgba(244, 243, 239, 0.12);
+  --accent-border-hover: rgba(244, 243, 239, 0.28);
+
+  /* 3D Shadows & Layering */
+  --shadow-3d-outset: 0 10px 30px -5px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  --shadow-3d-inset: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 0 rgba(255, 255, 255, 0.05);
+  --shadow-btn-3d: 0 4px 0 #0b0d12, 0 8px 16px rgba(0, 0, 0, 0.4);
+  --shadow-btn-pressed: 0 1px 0 #0b0d12, 0 2px 4px rgba(0, 0, 0, 0.4);
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-main);
+  min-height: 100vh;
+  padding: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.app-viewport {
+  width: 100%;
+  max-width: 1320px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Header */
+.a5-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-surface);
+  padding: 20px 24px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-3d-outset);
+}
+
+.brand-badge {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.logo-3d {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, #e6e4dc 0%, #a39f93 100%);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #0d1017;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 10px rgba(230, 228, 220, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.brand-text h1 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-offwhite);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.brand-text .sub-caption {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-input);
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--accent-border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background-color: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+/* Main Workspace Grid */
+.a5-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.panel {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-3d-outset);
+  display: flex;
+  flex-direction: column;
+  gap: 28px; /* Increased gap for breathing room */
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.panel-header h2 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-offwhite);
+}
+
+/* 3D Drop Zone */
+.drop-zone-3d {
+  background: var(--bg-input);
+  border: 2px dashed var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 36px 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-3d-inset);
+  position: relative;
+}
+
+.drop-zone-3d:hover, .drop-zone-3d.drag-over {
+  border-color: var(--accent-offwhite);
+  background: rgba(244, 243, 239, 0.03);
+}
+
+.icon-3d { font-size: 2.2rem; margin-bottom: 12px; }
+.primary-text { font-size: 0.95rem; font-weight: 500; color: var(--text-main); margin-bottom: 6px; }
+.secondary-text { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 20px; }
+
+/* Form Controls */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-group label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+textarea, select {
+  background: var(--bg-input);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-3d-inset);
+  resize: vertical;
+  outline: none;
+  transition: border 0.2s ease;
+  line-height: 1.5;
+}
+
+textarea:focus, select:focus {
+  border-color: var(--accent-offwhite);
+}
+
+.parameter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.full-width { grid-column: span 2; }
+
+/* Checkbox Cards Grid */
+.deliverables-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.checkbox-card-3d {
+  position: relative;
+  cursor: pointer;
+}
+
+.checkbox-card-3d input { position: absolute; opacity: 0; }
+
+.card-content {
+  background: var(--bg-input);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-3d-outset);
+  transition: all 0.15s ease;
+}
+
+.checkbox-card-3d input:checked + .card-content {
+  background: var(--bg-surface-elevated);
+  border-color: var(--accent-offwhite);
+  box-shadow: 0 0 12px rgba(244, 243, 239, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.checkbox-card-3d.full-span { grid-column: span 2; }
+.card-title { font-size: 0.9rem; font-weight: 500; color: var(--text-main); }
+.card-icon { font-size: 1.1rem; }
+
+/* Buttons */
+.btn-3d-primary {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(180deg, #3a3f50 0%, #222634 100%);
+  border: 1px solid var(--accent-offwhite);
+  border-radius: var(--radius-md);
+  color: var(--accent-offwhite);
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-btn-3d);
+  transition: all 0.1s ease;
+  margin-top: 10px;
+  letter-spacing: 0.02em;
+}
+
+.btn-3d-primary:hover {
+  background: linear-gradient(180deg, #444a5e 0%, #2a2f40 100%);
+}
+
+.btn-3d-primary:active {
+  transform: translateY(3px);
+  box-shadow: var(--shadow-btn-pressed);
+}
+
+.btn-tactile-secondary, .btn-tactile-sm {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--accent-border);
+  color: var(--text-main);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-tactile-secondary:hover, .btn-tactile-sm:hover {
+  border-color: var(--accent-offwhite);
+}
+
+.btn-highlight {
+  background: var(--accent-offwhite);
+  color: #0d1017;
+  font-weight: 600;
+}
+
+/* Output Station */
+.output-station {
+  background: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-3d-outset);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.station-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--accent-border);
+  padding-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tab-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.tab-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--accent-border);
+  color: var(--text-muted);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  background: var(--accent-offwhite);
+  color: #0d1017;
+  font-weight: 600;
+  border-color: var(--accent-offwhite);
+}
+
+.output-viewport {
+  background: var(--bg-input);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  min-height: 280px;
+  border: 1px solid var(--accent-border);
+  box-shadow: var(--shadow-3d-inset);
+  position: relative;
+}
+
+.tab-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.markdown-body {
+  color: var(--text-main);
+  line-height: 1.7;
+  font-size: 0.95rem;
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  color: var(--accent-offwhite);
+  margin-top: 24px;
+  margin-bottom: 12px;
+}
+
+.markdown-body ul, .markdown-body ol {
+  padding-left: 24px;
+  margin-bottom: 16px;
+}
+
+.placeholder-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.placeholder-icon { font-size: 2.5rem; margin-bottom: 14px; }
+.hidden { display: none !important; }
+.file-info-badge { display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface-elevated); padding: 10px 16px; border-radius: var(--radius-sm); border: 1px solid var(--accent-offwhite); }
+.btn-close { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.1rem; }
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS FIXES (ALIGNED & SPACIOUS)
+   ========================================================================== */
+@media (max-width: 768px) {
+  body {
+    padding: 12px; /* Less padding on outer body for mobile */
+  }
+
+  .a5-workspace { 
+    grid-template-columns: 1fr; /* Stack left and right panels */
+  }
+  
+  .a5-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  
+  .system-status {
+    align-self: flex-start; /* Align status badge to left on mobile */
+  }
+
+  .panel {
+    padding: 20px; /* Adjust padding for mobile screens */
+  }
+
+  /* Fix Form Elements Stacking */
+  .parameter-grid { 
+    grid-template-columns: 1fr; /* Stack dropdowns vertically */
+    gap: 16px;
+  }
+  .full-width { 
+    grid-column: span 1; /* Remove 2-column span */
+  }
+
+  /* Fix Checkbox Cards Stacking */
+  .deliverables-grid { 
+    grid-template-columns: 1fr; /* Stack cards vertically */
+    gap: 12px;
+  }
+  .checkbox-card-3d.full-span { 
+    grid-column: span 1; /* Remove 2-column span */
+  }
+
+  .tab-actions {
+    justify-content: flex-start; /* Align export buttons neatly */
+  }
+}

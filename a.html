@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A5 Content Transformation Platform</title>
+  
+  <!-- Custom Styling -->
+  <link rel="stylesheet" href="a.css">
+  
+  <!-- Font & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- CDN Libraries for Parsing, Markdown & Export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="app-viewport">
+    
+    <!-- Top Navigation Header -->
+    <header class="a5-header">
+      <div class="brand-badge">
+        <div class="logo-3d">
+          <span>A5</span>
+        </div>
+        <div class="brand-text">
+          <h1>A5 Engine</h1>
+          <span class="sub-caption">Enterprise Transformation Platform</span>
+        </div>
+      </div>
+      
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span class="status-label">A5 Operational</span>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="a5-workspace">
+      
+      <!-- Left Panel: Multimodal Content Ingestion -->
+      <section class="panel panel-left">
+        <div class="panel-header">
+          <span class="panel-icon">📥</span>
+          <h2>Source Ingestion</h2>
+        </div>
+
+        <!-- File Drag & Drop Zone -->
+        <div class="drop-zone-3d" id="dropZone">
+          <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.png,.jpg,.jpeg,.mp3,.wav,.m4a" hidden>
+          <div class="drop-content">
+            <div class="icon-3d">📄</div>
+            <p class="primary-text">Drop documents, images, or audio here</p>
+            <p class="secondary-text">Supports PDF, DOCX, TXT, Images, MP3/WAV</p>
+            <button class="btn-tactile-secondary" type="button" onclick="document.getElementById('fileInput').click()">
+              Browse Local File
+            </button>
+          </div>
+          <div id="fileInfo" class="file-info-badge hidden">
+            <span id="fileName">file_name.pdf</span>
+            <button type="button" class="btn-close" onclick="clearFile()">✕</button>
+          </div>
+        </div>
+
+        <!-- Raw Text Input -->
+        <div class="form-group">
+          <label for="sourceText">Raw Source Text / Context</label>
+          <textarea id="sourceText" placeholder="Paste unstructured articles, threat reports, transcripts, or notes..." rows="6"></textarea>
+        </div>
+
+        <!-- Custom Prompt Overlay -->
+        <div class="form-group">
+          <label for="customPrompt">Operator Custom Instructions (Optional)</label>
+          <textarea id="customPrompt" placeholder="Add specific guidelines, e.g., 'Emphasize Q3 financial growth and highlight section 4'..." rows="2"></textarea>
+        </div>
+      </section>
+
+      <!-- Right Panel: Transformation Controls -->
+      <section class="panel panel-right">
+        <div class="panel-header">
+          <span class="panel-icon">🎛️</span>
+          <h2>Transformation Parameters</h2>
+        </div>
+
+        <!-- Parameter Grid Controls -->
+        <div class="parameter-grid">
+          
+          <div class="form-group">
+            <label for="paramAudience">Target Audience</label>
+            <div class="select-wrapper">
+              <select id="paramAudience">
+                <option value="Executive" selected>Executive / C-Suite</option>
+                <option value="Technical">Technical / Engineers</option>
+                <option value="General Public">General Public</option>
+                <option value="Policy Makers">Policy Makers / Legal</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="paramTone">Communication Tone</label>
+            <div class="select-wrapper">
+              <select id="paramTone">
+                <option value="Authoritative" selected>Authoritative & Firm</option>
+                <option value="Urgent">Urgent & Action-Oriented</option>
+                <option value="Professional">Professional & Balanced</option>
+                <option value="Casual">Casual & Engaging</option>
+                <option value="Diplomatic">Diplomatic & Policy-Aligned</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="paramLanguage">Output Language</label>
+            <div class="select-wrapper">
+              <select id="paramLanguage">
+                <option value="English" selected>English (Global Standard)</option>
+                <option value="Hindi">Hindi (हिन्दी)</option>
+                <option value="Hinglish">Hinglish (Natural Mix)</option>
+                <option value="Spanish">Spanish (Español)</option>
+                <option value="French">French (Français)</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Target Deliverables Checkbox Group -->
+        <div class="form-group">
+          <label>Target Deliverables (Select Multiple)</label>
+          <div class="deliverables-grid">
+            
+            <label class="checkbox-card-3d">
+              <input type="checkbox" value="linkedin" checked>
+              <div class="card-content">
+                <span class="card-icon">💼</span>
+                <span class="card-title">LinkedIn Post</span>
+              </div>
+            </label>
+
+            <label class="checkbox-card-3d">
+              <input type="checkbox" value="advisory" checked>
+              <div class="card-content">
+                <span class="card-icon">🛡️</span>
+                <span class="card-title">Advisory Doc</span>
+              </div>
+            </label>
+
+            <label class="checkbox-card-3d">
+              <input type="checkbox" value="video_script">
+              <div class="card-content">
+                <span class="card-icon">🎬</span>
+                <span class="card-title">Video Script</span>
+              </div>
+            </label>
+
+            <label class="checkbox-card-3d">
+              <input type="checkbox" value="executive_summary" checked>
+              <div class="card-content">
+                <span class="card-icon">📊</span>
+                <span class="card-title">Executive Brief</span>
+              </div>
+            </label>
+
+            <label class="checkbox-card-3d full-span">
+              <input type="checkbox" value="custom">
+              <div class="card-content">
+                <span class="card-icon">✨</span>
+                <span class="card-title">Custom Instruction Deliverable</span>
+              </div>
+            </label>
+
+          </div>
+        </div>
+
+        <!-- Main Action CTA -->
+        <button id="btnTransform" class="btn-3d-primary" type="button" onclick="executeTransformation()">
+          <span class="btn-text">Execute A5 Transformation</span>
+          <span class="btn-spinner hidden"></span>
+        </button>
+
+      </section>
+
+    </main>
+
+    <!-- Bottom Station: Output Canvas & Export Station -->
+    <section class="output-station">
+      <div class="station-header">
+        <div class="panel-header">
+          <span class="panel-icon">🚀</span>
+          <h2>Generated Deliverables</h2>
+        </div>
+        
+        <!-- Output Navigation Tabs -->
+        <div id="outputTabs" class="tab-strip">
+          <span class="empty-tab-notice">No outputs generated yet</span>
+        </div>
+      </div>
+
+      <!-- Output Display Container -->
+      <div class="output-viewport">
+        <div id="tabActions" class="tab-actions hidden">
+          <button class="btn-tactile-sm" onclick="copyActiveTab()">📋 Copy Text</button>
+          <button class="btn-tactile-sm" onclick="exportActiveTabTxt()">📝 Download .TXT</button>
+          <button class="btn-tactile-sm btn-highlight" onclick="exportActiveTabPdf()">📄 Download PDF</button>
+        </div>
+
+        <div id="outputCanvas" class="markdown-body">
+          <div class="placeholder-state">
+            <div class="placeholder-icon">📐</div>
+            <p>Select parameters and execute transformation to generate structured deliverables.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="a.js"></script>
+</body>
+</html>
