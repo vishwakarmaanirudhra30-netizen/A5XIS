@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (NATIVE GEMINI API)
+   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GEMINI 2.5 FLASH)
    ========================================================================== */
 
 const A5_SYSTEM_DATASET = `
@@ -85,7 +85,8 @@ module.exports = async function handler(req, res) {
 };
 
 async function callGeminiNativeApi(systemPrompt, userPrompt, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
+  // Updated model endpoint to active gemini-2.5-flash
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey.trim()}`;
 
   const response = await fetch(url, {
     method: "POST",
