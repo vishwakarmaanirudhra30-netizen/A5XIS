@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (NATIVE GEMINI API)
+   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GEMINI V1 NATIVE)
    ========================================================================== */
 
 const A5_SYSTEM_DATASET = `
@@ -63,7 +63,7 @@ module.exports = async function handler(req, res) {
       processedContent += "\n\n[FILE CONTENT]:\n" + extracted_file_data;
     }
 
-    if (!processedContent.trime?.() && !processedContent.trim() && !custom_prompt.trim()) {
+    if (!processedContent.trim() && !custom_prompt.trim()) {
       return res.status(400).json({ status: "error", message: "Please provide source text, a file, or custom instructions." });
     }
 
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
 
     for (const type of output_types) {
       const prompt = constructPromptForType(type, processedContent, custom_prompt);
-      const generatedText = await callGeminiNativeApi(systemPrompt, prompt, apiKey);
+      const generatedText = await callGeminiV1Api(systemPrompt, prompt, apiKey);
       results[type] = generatedText;
     }
 
@@ -84,8 +84,9 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function callGeminiNativeApi(systemPrompt, userPrompt, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
+async function callGeminiV1Api(systemPrompt, userPrompt, apiKey) {
+  // Updated to 'v1' endpoint which natively supports stable models
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
 
   const response = await fetch(url, {
     method: "POST",
