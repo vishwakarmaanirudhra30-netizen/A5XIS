@@ -33,7 +33,6 @@ Your primary directive is to ingest raw, unstructured, or multi-source content a
 `;
 
 module.exports = async function handler(req, res) {
-  // CORS & Header Setup
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -43,7 +42,7 @@ module.exports = async function handler(req, res) {
 
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ status: "error", message: "A5 Engine API Key configuration missing." });
+    return res.status(500).json({ status: "error", message: "A5 Engine API Key configuration missing on server." });
   }
 
   try {
@@ -60,10 +59,7 @@ module.exports = async function handler(req, res) {
 
     let processedContent = source_text;
 
-    // Handle Audio File Ingestion via Groq Whisper API Pipeline
-    if (["mp3", "wav", "m4a"].includes(file_type) && extracted_file_data.startsWith("data:audio")) {
-      processedContent = await transcribeAudioWithWhisper(extracted_file_data, apiKey);
-    } else if (extracted_file_data && !extracted_file_data.startsWith("data:")) {
+    if (extracted_file_data && !extracted_file_data.startsWith("data:")) {
       processedContent += "\n\n[FILE CONTENT]:\n" + extracted_file_data;
     }
 
@@ -71,7 +67,6 @@ module.exports = async function handler(req, res) {
 
     const results = {};
 
-    // Process each requested output format concurrently
     for (const type of output_types) {
       const prompt = constructPromptForType(type, processedContent, custom_prompt);
       const generatedText = await executeDualModelFallback(systemPrompt, prompt, apiKey);
@@ -85,20 +80,18 @@ module.exports = async function handler(req, res) {
   }
 };
 
-// Dual-Model Silent Fallback Logic (Llama 3.3 70B -> Fallback Llama 3.1 8B Instant)
 async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
   const PRIMARY_MODEL = "llama-3.3-70b-versatile";
   const FALLBACK_MODEL = "llama-3.1-8b-instant";
 
   try {
-    // Primary Attempt: High Intelligence Model
     return await callGroqApi(PRIMARY_MODEL, systemPrompt, userPrompt, apiKey);
   } catch (err) {
-    // Silent Fallback: Execute smaller instant model without notifying frontend
     try {
       return await callGroqApi(FALLBACK_MODEL, systemPrompt, userPrompt, apiKey);
     } catch (fallbackErr) {
-      throw new Error("A5 Engine processing error. Please retry your request.");
+      // Direct raw error for debugging exact API issue
+      throw new Error(`API Error: ${fallbackErr.message}`);
     }
   }
 }
@@ -107,8 +100,9 @@ async function callGroqApi(model, systemPrompt, userPrompt, apiKey) {
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
+      "Authorization": `Bearer ${apiKey.trim()}`,
+      "Content-Type": "application/json",
+      "User-Agent": "A5-Engine-Platform/1.0"
     },
     body: JSON.stringify({
       model: model,
@@ -120,37 +114,14 @@ async function callGroqApi(model, systemPrompt, userPrompt, apiKey) {
     })
   });
 
+  const data = await response.json();
+
   if (!response.ok) {
-    throw new Error(`API Error HTTP ${response.status}`);
+    const errorMsg = data.error ? data.error.message : `HTTP ${response.status}`;
+    throw new Error(errorMsg);
   }
 
-  const data = await response.json();
   return data.choices[0].message.content;
-}
-
-// Groq Whisper Audio Transcribe helper
-async function transcribeAudioWithWhisper(base64Audio, apiKey) {
-  // Convert Base64 data URL to binary Blob for FormData transmission
-  const base64Data = base64Audio.split(",")[1];
-  const buffer = Buffer.from(base64Data, "base64");
-  
-  const FormData = require("form-data");
-  const form = new FormData();
-  form.append("file", buffer, { filename: "audio.mp3", contentType: "audio/mp3" });
-  form.append("model", "whisper-large-v3");
-
-  const response = await fetch("https://api.groq.com/openai/v1/audio/transcriptions", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${apiKey}`,
-      ...form.getHeaders()
-    },
-    body: form
-  });
-
-  if (!response.ok) return "[Audio Transcription Failed]";
-  const data = await response.json();
-  return data.text;
 }
 
 function constructPromptForType(type, content, customPrompt) {
@@ -171,5 +142,5 @@ function constructPromptForType(type, content, customPrompt) {
     default:
       return prompt + `Transform into ${type} format.`;
   }
-                }
-      
+         }
+         
