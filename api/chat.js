@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GEMINI V1 NATIVE)
+   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GEMINI OPENAI-COMPATIBLE)
    ========================================================================== */
 
 const A5_SYSTEM_DATASET = `
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
 
     for (const type of output_types) {
       const prompt = constructPromptForType(type, processedContent, custom_prompt);
-      const generatedText = await callGeminiV1Api(systemPrompt, prompt, apiKey);
+      const generatedText = await callGeminiOpenAICompat(systemPrompt, prompt, apiKey);
       results[type] = generatedText;
     }
 
@@ -84,27 +84,21 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function callGeminiV1Api(systemPrompt, userPrompt, apiKey) {
-  // Updated to 'v1' endpoint which natively supports stable models
-  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
-
-  const response = await fetch(url, {
+async function callGeminiOpenAICompat(systemPrompt, userPrompt, apiKey) {
+  // Google's official OpenAI-compatible endpoint
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
+      "Authorization": `Bearer ${apiKey.trim()}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: [{
-        role: "user",
-        parts: [{ text: userPrompt }]
-      }],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2048
-      }
+      model: "gemini-1.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.3
     })
   });
 
@@ -116,7 +110,7 @@ async function callGeminiV1Api(systemPrompt, userPrompt, apiKey) {
   }
 
   try {
-    return data.candidates[0].content.parts[0].text;
+    return data.choices[0].message.content;
   } catch (e) {
     throw new Error("Invalid response format received from Gemini server.");
   }
