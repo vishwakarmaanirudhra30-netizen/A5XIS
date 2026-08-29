@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION & DUAL-MODEL SILENT FALLBACK
+   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GOOGLE GEMINI API)
    ========================================================================== */
 
 const A5_SYSTEM_DATASET = `
@@ -33,7 +33,6 @@ Your primary directive is to ingest raw, unstructured, or multi-source content a
 `;
 
 module.exports = async function handler(req, res) {
-  // CORS Headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -41,9 +40,11 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ message: "Method Not Allowed" });
 
-  const apiKey = process.env.GROQ_API_KEY;
+  // Fallback to GROQ_API_KEY in case variable name isn't updated in Vercel
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY;
+
   if (!apiKey) {
-    return res.status(500).json({ status: "error", message: "A5 Engine API Key configuration missing on server." });
+    return res.status(500).json({ status: "error", message: "API Key is missing on the Vercel server." });
   }
 
   try {
@@ -63,13 +64,18 @@ module.exports = async function handler(req, res) {
       processedContent += "\n\n[FILE CONTENT]:\n" + extracted_file_data;
     }
 
+    if (!processedContent.trim() && !custom_prompt.trim()) {
+        return res.status(400).json({ status: "error", message: "Please provide some source text, a file, or custom instructions." });
+    }
+
     const systemPrompt = `${A5_SYSTEM_DATASET}\n\n[TRANSFORMATION CONFIGURATION]:\n- Target Audience: ${audience}\n- Tone: ${tone}\n- Target Language: ${language}`;
 
     const results = {};
 
+    // Executing requests sequentially to respect Gemini's 15 RPM free limit
     for (const type of output_types) {
       const prompt = constructPromptForType(type, processedContent, custom_prompt);
-      const generatedText = await executeDualModelFallback(systemPrompt, prompt, apiKey);
+      const generatedText = await callGeminiApi(systemPrompt, prompt, apiKey);
       results[type] = generatedText;
     }
 
@@ -80,49 +86,41 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
-  // Sabse stable aur hamesha free chalne wale models
-  const PRIMARY_MODEL = "mixtral-8x7b-32768";
-  const FALLBACK_MODEL = "gemma2-9b-it";
-
-  try {
-    return await callGroqApi(PRIMARY_MODEL, systemPrompt, userPrompt, apiKey);
-  } catch (err) {
-    try {
-      return await callGroqApi(FALLBACK_MODEL, systemPrompt, userPrompt, apiKey);
-    } catch (fallbackErr) {
-      // Ye hume exact error batayega agar API key me issue hua toh
-      throw new Error(`API Error: ${fallbackErr.message}`);
-    }
-  }
-}
-
-async function callGroqApi(model, systemPrompt, userPrompt, apiKey) {
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+async function callGeminiApi(systemPrompt, userPrompt, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
+  
+  const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apiKey.trim()}`,
       "Content-Type": "application/json",
-      "User-Agent": "A5-Engine/1.0"
     },
     body: JSON.stringify({
-      model: model,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      temperature: 0.3
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
+      },
+      contents: [{
+        role: "user",
+        parts: [{ text: userPrompt }]
+      }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 2048 // Prevents over-consumption of tokens
+      }
     })
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    const errorMsg = data.error ? data.error.message : `HTTP ${response.status}`;
+    const errorMsg = data.error ? data.error.message : `HTTP Error ${response.status}`;
     throw new Error(errorMsg);
   }
 
-  return data.choices[0].message.content;
+  try {
+    return data.candidates[0].content.parts[0].text;
+  } catch (e) {
+    throw new Error("Received an invalid response format from Gemini.");
+  }
 }
 
 function constructPromptForType(type, content, customPrompt) {
