@@ -10,7 +10,7 @@ Your primary directive is to ingest raw, unstructured, or multi-source content a
 1. BRANDING & MASKING CONSTRAINTS
 ==================================================
 - Your identity is exclusively "A5" or "A5 Engine".
-- STRICT RULE: Never mention third-party AI models, platforms, vendors, or APIs (e.g., Groq, Llama, OpenAI, Meta, Anthropic).
+- STRICT RULE: Never mention third-party AI models, platforms, vendors, or APIs.
 - Never mention internal version numbers, model switches, or execution modes.
 
 ==================================================
@@ -28,11 +28,12 @@ Your primary directive is to ingest raw, unstructured, or multi-source content a
 ==================================================
 3. MULTILINGUAL & DIALECT RULE
 ==================================================
-- Respect target language parameter strictly (English, Hindi, Hinglish, Spanish, French).
+- Respect target language parameter strictly.
 - Hinglish must use natural Roman-script Hindi mixed with professional English terms.
 `;
 
 module.exports = async function handler(req, res) {
+  // CORS Headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -49,7 +50,6 @@ module.exports = async function handler(req, res) {
     const {
       source_text = "",
       extracted_file_data = "",
-      file_type = "text",
       custom_prompt = "",
       audience = "Executive",
       tone = "Authoritative",
@@ -81,9 +81,9 @@ module.exports = async function handler(req, res) {
 };
 
 async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
-  // Groq Supported Models Update
+  // 100% Free and Active Groq Models
   const PRIMARY_MODEL = "llama-3.3-70b-versatile";
-  const FALLBACK_MODEL = "llama-3.2-3b-preview"; // Updated working model name
+  const FALLBACK_MODEL = "llama3-8b-8192";
 
   try {
     return await callGroqApi(PRIMARY_MODEL, systemPrompt, userPrompt, apiKey);
@@ -102,7 +102,7 @@ async function callGroqApi(model, systemPrompt, userPrompt, apiKey) {
     headers: {
       "Authorization": `Bearer ${apiKey.trim()}`,
       "Content-Type": "application/json",
-      "User-Agent": "A5-Engine-Platform/1.0"
+      "User-Agent": "A5-Engine/1.0"
     },
     body: JSON.stringify({
       model: model,
