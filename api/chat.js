@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GOOGLE GEMINI API)
+   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GEMINI OPENAI-COMPATIBLE)
    ========================================================================== */
 
 const A5_SYSTEM_DATASET = `
@@ -40,7 +40,6 @@ module.exports = async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ message: "Method Not Allowed" });
 
-  // Fallback to GROQ_API_KEY in case variable name isn't updated in Vercel
   const apiKey = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY;
 
   if (!apiKey) {
@@ -65,14 +64,13 @@ module.exports = async function handler(req, res) {
     }
 
     if (!processedContent.trim() && !custom_prompt.trim()) {
-        return res.status(400).json({ status: "error", message: "Please provide some source text, a file, or custom instructions." });
+        return res.status(400).json({ status: "error", message: "Please provide source text, a file, or custom instructions." });
     }
 
     const systemPrompt = `${A5_SYSTEM_DATASET}\n\n[TRANSFORMATION CONFIGURATION]:\n- Target Audience: ${audience}\n- Tone: ${tone}\n- Target Language: ${language}`;
 
     const results = {};
 
-    // Executing requests sequentially to respect Gemini's 15 RPM free limit
     for (const type of output_types) {
       const prompt = constructPromptForType(type, processedContent, custom_prompt);
       const generatedText = await callGeminiApi(systemPrompt, prompt, apiKey);
@@ -87,25 +85,19 @@ module.exports = async function handler(req, res) {
 };
 
 async function callGeminiApi(systemPrompt, userPrompt, apiKey) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
-  
-  const response = await fetch(url, {
+  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey.trim()}`,
+      "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: [{
-        role: "user",
-        parts: [{ text: userPrompt }]
-      }],
-      generationConfig: {
-        temperature: 0.3,
-        maxOutputTokens: 2048 // Prevents over-consumption of tokens
-      }
+      model: "gemini-1.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      temperature: 0.3
     })
   });
 
@@ -116,11 +108,7 @@ async function callGeminiApi(systemPrompt, userPrompt, apiKey) {
     throw new Error(errorMsg);
   }
 
-  try {
-    return data.candidates[0].content.parts[0].text;
-  } catch (e) {
-    throw new Error("Received an invalid response format from Gemini.");
-  }
+  return data.choices[0].message.content;
 }
 
 function constructPromptForType(type, content, customPrompt) {
