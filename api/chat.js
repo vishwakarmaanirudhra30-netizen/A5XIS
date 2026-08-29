@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (GEMINI OPENAI-COMPATIBLE)
+   A5 ENGINE BACKEND - VERCEL SERVERLESS FUNCTION (NATIVE GEMINI API)
    ========================================================================== */
 
 const A5_SYSTEM_DATASET = `
@@ -73,7 +73,7 @@ module.exports = async function handler(req, res) {
 
     for (const type of output_types) {
       const prompt = constructPromptForType(type, processedContent, custom_prompt);
-      const generatedText = await callGeminiOpenAICompat(systemPrompt, prompt, apiKey);
+      const generatedText = await callGeminiNativeApi(systemPrompt, prompt, apiKey);
       results[type] = generatedText;
     }
 
@@ -84,21 +84,26 @@ module.exports = async function handler(req, res) {
   }
 };
 
-async function callGeminiOpenAICompat(systemPrompt, userPrompt, apiKey) {
-  // Google's official OpenAI-compatible endpoint
-  const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+async function callGeminiNativeApi(systemPrompt, userPrompt, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`;
+
+  const response = await fetch(url, {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${apiKey.trim()}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      model: "gemini-1.5-flash",
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ],
-      temperature: 0.3
+      systemInstruction: {
+        parts: [{ text: systemPrompt }]
+      },
+      contents: [{
+        role: "user",
+        parts: [{ text: userPrompt }]
+      }],
+      generationConfig: {
+        temperature: 0.3,
+        maxOutputTokens: 2048
+      }
     })
   });
 
@@ -110,7 +115,7 @@ async function callGeminiOpenAICompat(systemPrompt, userPrompt, apiKey) {
   }
 
   try {
-    return data.choices[0].message.content;
+    return data.candidates[0].content.parts[0].text;
   } catch (e) {
     throw new Error("Invalid response format received from Gemini server.");
   }
