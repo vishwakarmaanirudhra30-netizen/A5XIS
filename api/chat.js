@@ -81,9 +81,9 @@ module.exports = async function handler(req, res) {
 };
 
 async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
-  // 100% Free and Active Groq Models
-  const PRIMARY_MODEL = "llama-3.3-70b-versatile";
-  const FALLBACK_MODEL = "llama3-8b-8192";
+  // Sabse stable aur hamesha free chalne wale models
+  const PRIMARY_MODEL = "mixtral-8x7b-32768";
+  const FALLBACK_MODEL = "gemma2-9b-it";
 
   try {
     return await callGroqApi(PRIMARY_MODEL, systemPrompt, userPrompt, apiKey);
@@ -91,6 +91,7 @@ async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
     try {
       return await callGroqApi(FALLBACK_MODEL, systemPrompt, userPrompt, apiKey);
     } catch (fallbackErr) {
+      // Ye hume exact error batayega agar API key me issue hua toh
       throw new Error(`API Error: ${fallbackErr.message}`);
     }
   }
