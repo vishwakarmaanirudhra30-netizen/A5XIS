@@ -81,8 +81,9 @@ module.exports = async function handler(req, res) {
 };
 
 async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
+  // Groq Supported Models Update
   const PRIMARY_MODEL = "llama-3.3-70b-versatile";
-  const FALLBACK_MODEL = "llama-3.1-8b-instant";
+  const FALLBACK_MODEL = "llama-3.2-3b-preview"; // Updated working model name
 
   try {
     return await callGroqApi(PRIMARY_MODEL, systemPrompt, userPrompt, apiKey);
@@ -90,7 +91,6 @@ async function executeDualModelFallback(systemPrompt, userPrompt, apiKey) {
     try {
       return await callGroqApi(FALLBACK_MODEL, systemPrompt, userPrompt, apiKey);
     } catch (fallbackErr) {
-      // Direct raw error for debugging exact API issue
       throw new Error(`API Error: ${fallbackErr.message}`);
     }
   }
@@ -142,5 +142,4 @@ function constructPromptForType(type, content, customPrompt) {
     default:
       return prompt + `Transform into ${type} format.`;
   }
-         }
-         
+}
